@@ -6,6 +6,9 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+// Import database connection
+const { connectDB } = require('./config/database');
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
@@ -69,9 +72,22 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
+    // Test database connection
+    let dbStatus = 'disconnected';
+    try {
+        const connection = await connectDB();
+        const [result] = await connection.execute('SELECT 1 as test');
+        await connection.end();
+        dbStatus = 'connected';
+    } catch (error) {
+        console.error('Database health check failed:', error.message);
+        dbStatus = 'error: ' + error.message;
+    }
+
     res.json(formatResponse({
         status: 'healthy',
+        database: dbStatus,
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
         memory: process.memoryUsage(),
@@ -97,6 +113,43 @@ app.get('/api', (req, res) => {
         },
         documentation: 'https://github.com/your-repo/adaptive-dental-inventory-api'
     }, 'API Information'));
+});
+
+// Database test endpoint
+app.get('/api/test-db', async (req, res) => {
+    try {
+        const connection = await connectDB();
+        
+        // Test basic query
+        const [basicTest] = await connection.execute('SELECT 1 as test');
+        
+        // Test database tables
+        const [tables] = await connection.execute('SHOW TABLES');
+        
+        // Test sample data from users table
+        let userCount = 0;
+        try {
+            const [userResult] = await connection.execute('SELECT COUNT(*) as count FROM users');
+            userCount = userResult[0].count;
+        } catch (err) {
+            console.log('Users table might not exist:', err.message);
+        }
+        
+        await connection.end();
+        
+        res.json(formatResponse({
+            connection: 'successful',
+            basicTest: basicTest[0],
+            tablesCount: tables.length,
+            tables: tables.map(t => Object.values(t)[0]),
+            userCount: userCount,
+            database: process.env.DB_NAME
+        }, 'Database connection test successful'));
+        
+    } catch (error) {
+        console.error('Database test failed:', error);
+        res.status(500).json(formatResponse(null, 'Database connection failed: ' + error.message, 500));
+    }
 });
 
 // API Routes
