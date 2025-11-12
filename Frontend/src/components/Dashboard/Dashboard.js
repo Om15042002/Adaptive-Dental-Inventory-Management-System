@@ -44,7 +44,7 @@ import { toast } from "react-toastify";
 import RecentTransactions from "./RecentTransactions";
 import EnhancedStockLevels from "./EnhancedStockLevels";
 
-function StatCard({ title, value, icon, color, subtitle }) {
+function StatCard({ title, value, icon, color, subtitle, trend }) {
   return (
     <Card
       sx={{
@@ -52,51 +52,90 @@ function StatCard({ title, value, icon, color, subtitle }) {
         position: "relative",
         overflow: "visible",
         boxShadow: 2,
-        transition: "transform 0.2s, box-shadow 0.2s",
+        borderLeft: `4px solid ${color}`,
+        background: `linear-gradient(135deg, ${color}08 0%, transparent 100%)`,
+        transition: "all 0.3s ease-in-out",
         "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: 4,
+          transform: "translateY(-6px)",
+          boxShadow: `0 8px 25px ${color}30`,
+          borderLeftWidth: "6px",
         },
       }}
     >
-      <CardContent sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2.5 }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+        <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: 2 }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{ 
+                fontWeight: 600, 
+                fontSize: { xs: "0.9rem", sm: "1rem" },
+                color: "text.primary",
+                mb: 0.5
+              }}
+            >
+              {title}
+            </Typography>
+            {subtitle && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontSize: "0.8rem", lineHeight: 1.3 }}
+              >
+                {subtitle}
+              </Typography>
+            )}
+          </Box>
           <Box
             sx={{
-              backgroundColor: color + "20",
-              borderRadius: "50%",
+              backgroundColor: `${color}20`,
+              borderRadius: "12px",
               p: 1.5,
-              mr: 2,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              minWidth: { xs: 44, sm: 50 },
+              height: { xs: 44, sm: 50 },
             }}
           >
-            {React.cloneElement(icon, { sx: { color, fontSize: 28 } })}
+            {React.cloneElement(icon, { 
+              sx: { 
+                color, 
+                fontSize: { xs: 24, sm: 28 } 
+              } 
+            })}
           </Box>
+        </Box>
+        
+        <Box sx={{ mb: trend ? 1 : 0 }}>
           <Typography
-            variant="h6"
+            variant="h3"
             component="div"
-            sx={{ fontWeight: 600, fontSize: "1rem" }}
+            sx={{ 
+              fontWeight: "bold", 
+              color: color,
+              fontSize: { xs: "1.8rem", sm: "2.2rem", md: "2.5rem" },
+              lineHeight: 1.2
+            }}
           >
-            {title}
+            {value}
           </Typography>
         </Box>
-        <Typography
-          variant="h3"
-          component="div"
-          sx={{ fontWeight: "bold", mb: 1.5, color: color }}
-        >
-          {value}
-        </Typography>
-        {subtitle && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ fontSize: "0.875rem" }}
-          >
-            {subtitle}
-          </Typography>
+
+        {trend && (
+          <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
+            <Chip
+              label={trend.label}
+              size="small"
+              sx={{
+                backgroundColor: trend.positive ? "#4caf5020" : "#f4433620",
+                color: trend.positive ? "#4caf50" : "#f44336",
+                fontWeight: 600,
+                fontSize: "0.7rem",
+              }}
+            />
+          </Box>
         )}
       </CardContent>
     </Card>
