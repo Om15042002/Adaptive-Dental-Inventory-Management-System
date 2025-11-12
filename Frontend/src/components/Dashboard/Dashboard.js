@@ -541,8 +541,102 @@ function Dashboard() {
           </Paper>
         </Grid>
 
+        {/* Recent Transactions */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 4, height: 450, boxShadow: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Recent Transactions
+              </Typography>
+              <Chip
+                icon={<TimeIcon />}
+                label={`${recentTransactions.length} Recent`}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />
+            </Box>
+            
+            {transactionsLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
+                <CircularProgress />
+              </Box>
+            ) : transactionsError ? (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {transactionsError}
+                <Button size="small" onClick={fetchRecentTransactions} sx={{ ml: 1 }}>
+                  Retry
+                </Button>
+              </Alert>
+            ) : recentTransactions.length === 0 ? (
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: 300,
+                color: 'text.secondary'
+              }}>
+                <InventoryIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
+                <Typography variant="h6" sx={{ mb: 1 }}>
+                  No Recent Transactions
+                </Typography>
+                <Typography variant="body2">
+                  Transaction history will appear here
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ height: 350, overflow: 'auto' }}>
+                <List sx={{ p: 0 }}>
+                  {recentTransactions.map((transaction, index) => (
+                    <ListItem
+                      key={transaction.id || index}
+                      sx={{
+                        px: 0,
+                        py: 2,
+                        borderBottom: index < recentTransactions.length - 1 ? '1px solid #e0e0e0' : 'none',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                          borderRadius: 1,
+                        },
+                      }}
+                    >
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                              {transaction.product_name}
+                            </Typography>
+                            <Chip
+                              label={transaction.movement_type}
+                              size="small"
+                              color={transaction.movement_type === 'IN' ? 'success' : 'error'}
+                              variant="outlined"
+                            />
+                          </Box>
+                        }
+                        secondary={
+                          <Box>
+                            <Typography variant="body2" color="text.secondary">
+                              Quantity: <strong>{Math.abs(transaction.quantity)}</strong>
+                              {transaction.reason && ` • ${transaction.reason}`}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {new Date(transaction.created_at).toLocaleString()}
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            )}
+          </Paper>
+        </Grid>
+
         {/* Low Stock Alerts */}
-        <Grid item xs={12}>
+        <Grid item xs={12} md={6}>
           <Paper sx={{ p: 4, boxShadow: 2 }}>
             <Box
               sx={{
