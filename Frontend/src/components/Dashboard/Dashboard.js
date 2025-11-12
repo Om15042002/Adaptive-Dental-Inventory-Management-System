@@ -15,6 +15,8 @@ import {
   Alert,
   IconButton,
   Tooltip,
+  LinearProgress,
+  Skeleton,
 } from "@mui/material";
 import {
   Inventory as InventoryIcon,
@@ -255,17 +257,57 @@ function Dashboard() {
     }
   };
 
+  // Skeleton loading component
+  const SkeletonStatCard = () => (
+    <Card sx={{ height: "100%", p: { xs: 2, sm: 3 } }}>
+      <CardContent>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <Skeleton variant="circular" width={50} height={50} sx={{ mr: 2 }} />
+          <Skeleton variant="text" width={120} height={24} />
+        </Box>
+        <Skeleton variant="text" width={80} height={40} sx={{ mb: 1 }} />
+        <Skeleton variant="text" width={150} height={20} />
+      </CardContent>
+    </Card>
+  );
+
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "50vh",
-        }}
-      >
-        <CircularProgress />
+      <Box>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          mb: 4 
+        }}>
+          <Skeleton variant="text" width={200} height={48} />
+          <Skeleton variant="rectangular" width={120} height={32} />
+        </Box>
+        
+        {/* Skeleton Stats Cards */}
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} sx={{ mb: { xs: 3, md: 5 } }}>
+          {[...Array(4)].map((_, index) => (
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <SkeletonStatCard />
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* Skeleton Charts */}
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+          <Grid item xs={12} lg={8}>
+            <Paper sx={{ p: 4, height: 450 }}>
+              <Skeleton variant="text" width={200} height={32} sx={{ mb: 3 }} />
+              <Skeleton variant="rectangular" width="100%" height={350} />
+            </Paper>
+          </Grid>
+          <Grid item xs={12} lg={4}>
+            <Paper sx={{ p: 3, height: 450 }}>
+              <Skeleton variant="text" width={150} height={32} sx={{ mb: 3 }} />
+              <Skeleton variant="circular" width={200} height={200} sx={{ mx: 'auto' }} />
+            </Paper>
+          </Grid>
+        </Grid>
       </Box>
     );
   }
@@ -300,7 +342,7 @@ function Dashboard() {
       </Box>
 
       {/* Stats Cards */}
-      <Grid container spacing={4} sx={{ mb: 5 }}>
+      <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} sx={{ mb: { xs: 3, md: 5 } }}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Total Products"
@@ -308,6 +350,10 @@ function Dashboard() {
             icon={<InventoryIcon />}
             color="#1976d2"
             subtitle="Active items in inventory"
+            trend={{ 
+              label: "+12 new items", 
+              positive: true 
+            }}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -331,6 +377,10 @@ function Dashboard() {
             icon={<MoneyIcon />}
             color="#4caf50"
             subtitle="Current inventory value"
+            trend={{ 
+              label: "+8.5% this month", 
+              positive: true 
+            }}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -345,10 +395,14 @@ function Dashboard() {
       </Grid>
 
       {/* Charts and Lists */}
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
         {/* Inventory by Category Chart */}
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 4, height: 450, boxShadow: 2 }}>
+        <Grid item xs={12} lg={8}>
+          <Paper sx={{ 
+            p: { xs: 2, sm: 3, md: 4 }, 
+            height: { xs: 350, md: 450 }, 
+            boxShadow: 2 
+          }}>
             <Typography
               variant="h6"
               gutterBottom
@@ -376,8 +430,12 @@ function Dashboard() {
         </Grid>
 
         {/* Stock Status Pie Chart */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3, height: 450, boxShadow: 2 }}>
+        <Grid item xs={12} lg={4}>
+          <Paper sx={{ 
+            p: { xs: 2, sm: 3 }, 
+            height: { xs: 350, md: 450 }, 
+            boxShadow: 2 
+          }}>
             <Typography
               variant="h6"
               gutterBottom
@@ -542,8 +600,12 @@ function Dashboard() {
         </Grid>
 
         {/* Recent Transactions */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 4, height: 450, boxShadow: 2 }}>
+        <Grid item xs={12} xl={6}>
+          <Paper sx={{ 
+            p: { xs: 2, sm: 3, md: 4 }, 
+            height: { xs: 400, md: 450 }, 
+            boxShadow: 2 
+          }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 Recent Transactions
@@ -635,9 +697,12 @@ function Dashboard() {
           </Paper>
         </Grid>
 
-        {/* Low Stock Alerts */}
+        {/* Stock Level Alerts */}
         <Grid item xs={12}>
-          <Paper sx={{ p: 4, boxShadow: 2 }}>
+          <Paper sx={{ 
+            p: { xs: 2, sm: 3, md: 4 }, 
+            boxShadow: 2 
+          }}>
             <Box
               sx={{
                 display: "flex",
