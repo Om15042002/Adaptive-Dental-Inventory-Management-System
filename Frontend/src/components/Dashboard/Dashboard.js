@@ -636,7 +636,7 @@ function Dashboard() {
         </Grid>
 
         {/* Low Stock Alerts */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12}>
           <Paper sx={{ p: 4, boxShadow: 2 }}>
             <Box
               sx={{
@@ -644,13 +644,31 @@ function Dashboard() {
                 justifyContent: "space-between",
                 alignItems: "center",
                 mb: 3,
+                flexWrap: "wrap",
+                gap: 2
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Low Stock Alerts
-              </Typography>
-              <Button variant="contained" size="small">
-                View All
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  Stock Level Alerts
+                </Typography>
+                <Chip
+                  icon={<WarningIcon />}
+                  label={`${lowStockItems.length} Items Need Attention`}
+                  size="small"
+                  color="warning"
+                  variant="outlined"
+                />
+              </Box>
+              <Button 
+                variant="contained" 
+                size="small"
+                sx={{ 
+                  minWidth: 'auto',
+                  px: 3
+                }}
+              >
+                View All Inventory
               </Button>
             </Box>
             {lowStockItems.length === 0 ? (
@@ -658,105 +676,133 @@ function Dashboard() {
                 All items are adequately stocked!
               </Alert>
             ) : (
-              <List sx={{ p: 0 }}>
-                {lowStockItems.map((item) => (
-                  <ListItem
-                    key={item.id || item.product_id}
-                    sx={{
-                      border: "1px solid #e0e0e0",
-                      borderRadius: 2,
-                      mb: 2,
-                      p: 2.5,
-                      backgroundColor: "#fafafa",
-                      "&:hover": {
-                        backgroundColor: "#f5f5f5",
-                        boxShadow: 1,
-                      },
-                    }}
-                  >
-                    <ListItemText
-                      primary={
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1.5,
-                            mb: 1.5,
-                          }}
-                        >
-                          <Typography
-                            variant="subtitle1"
-                            sx={{ fontWeight: 600, fontSize: "1.1rem" }}
+              <Grid container spacing={3}>
+                {lowStockItems.map((item) => {
+                  const currentStock = item.current_stock || item.currentStock || 0;
+                  const minStock = item.min_stock || item.minStock || 0;
+                  const stockPercentage = minStock > 0 ? (currentStock / minStock) * 100 : 0;
+                  const isCritical = currentStock < minStock * 0.5;
+                  
+                  return (
+                    <Grid item xs={12} sm={6} md={4} key={item.id || item.product_id}>
+                      <Card
+                        sx={{
+                          p: 3,
+                          height: '100%',
+                          border: `2px solid ${isCritical ? '#f4433620' : '#ff980020'}`,
+                          borderLeft: `4px solid ${isCritical ? '#f44336' : '#ff9800'}`,
+                          transition: 'all 0.2s ease-in-out',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: 3,
+                          },
+                        }}
+                      >
+                        <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+                          <Box sx={{ mb: 2 }}>
+                            <Typography
+                              variant="h6"
+                              sx={{ 
+                                fontWeight: 600, 
+                                fontSize: "1rem", 
+                                mb: 0.5,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {item.product_name ||
+                                item.productName ||
+                                item.name ||
+                                "Unknown Product"}
+                            </Typography>
+                            <Typography 
+                              variant="body2" 
+                              color="text.secondary"
+                              sx={{ fontSize: '0.85rem' }}
+                            >
+                              {item.category_name ||
+                                item.categoryName ||
+                                item.category ||
+                                "General"}
+                            </Typography>
+                          </Box>
+
+                          <Box sx={{ mb: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                              <Typography variant="body2" color="text.secondary">
+                                Stock Level
+                              </Typography>
+                              <Chip
+                                label={isCritical ? "Critical" : "Low Stock"}
+                                size="small"
+                                color={isCritical ? "error" : "warning"}
+                                sx={{ 
+                                  fontWeight: 600,
+                                  fontSize: '0.75rem'
+                                }}
+                              />
+                            </Box>
+                            <LinearProgress
+                              variant="determinate"
+                              value={Math.min(stockPercentage, 100)}
+                              sx={{
+                                height: 8,
+                                borderRadius: 4,
+                                backgroundColor: isCritical ? '#f4433620' : '#ff980020',
+                                '& .MuiLinearProgress-bar': {
+                                  backgroundColor: isCritical ? '#f44336' : '#ff9800',
+                                  borderRadius: 4,
+                                },
+                              }}
+                            />
+                          </Box>
+
+                          <Box 
+                            sx={{ 
+                              display: 'grid',
+                              gridTemplateColumns: '1fr 1fr',
+                              gap: 2,
+                              textAlign: 'center'
+                            }}
                           >
-                            {item.product_name ||
-                              item.productName ||
-                              item.name ||
-                              "Unknown Product"}
-                          </Typography>
-                          <Chip
-                            label={
-                              item.category_name ||
-                              item.categoryName ||
-                              item.category ||
-                              "General"
-                            }
-                            size="small"
-                            color="primary"
-                            variant="outlined"
-                          />
-                        </Box>
-                      }
-                      secondary={
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 3,
-                            mt: 1,
-                            alignItems: "center",
-                          }}
-                        >
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ fontWeight: 500 }}
-                          >
-                            Current:{" "}
-                            <strong>
-                              {item.current_stock || item.currentStock || 0}
-                            </strong>
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ fontWeight: 500 }}
-                          >
-                            Min Required:{" "}
-                            <strong>
-                              {item.min_stock || item.minStock || 0}
-                            </strong>
-                          </Typography>
-                          <Chip
-                            label={
-                              (item.current_stock || item.currentStock || 0) <
-                              (item.min_stock || item.minStock || 0) * 0.5
-                                ? "Critical"
-                                : "Low Stock"
-                            }
-                            size="small"
-                            sx={{ ml: "auto" }}
-                            color={
-                              (item.current_stock || item.currentStock || 0) <
-                              (item.min_stock || item.minStock || 0) * 0.5
-                                ? "error"
-                                : "warning"
-                            }
-                          />
-                        </Box>
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
+                            <Box>
+                              <Typography
+                                variant="h5"
+                                sx={{
+                                  fontWeight: 700,
+                                  color: isCritical ? '#f44336' : '#ff9800',
+                                  mb: 0.5,
+                                }}
+                              >
+                                {currentStock}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                Current
+                              </Typography>
+                            </Box>
+                            <Box>
+                              <Typography
+                                variant="h5"
+                                sx={{
+                                  fontWeight: 700,
+                                  color: 'text.secondary',
+                                  mb: 0.5,
+                                }}
+                              >
+                                {minStock}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                Required
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  );
+                })}
+              </Grid>
             )}
           </Paper>
         </Grid>
