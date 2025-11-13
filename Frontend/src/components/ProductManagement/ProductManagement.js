@@ -56,6 +56,7 @@ function ProductManagement() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [viewMode, setViewMode] = useState("cards"); // "cards" or "detail"
   const [productForm, setProductForm] = useState({
     name: "",
@@ -204,11 +205,18 @@ function ProductManagement() {
     }
   };
 
+  const selectAllMatching = () => {
+    // Select all products that match current filters (across pages)
+    const matchingIds = filteredProducts.map((p) => p.id);
+    setSelectedIds((prev) => Array.from(new Set([...prev, ...matchingIds])));
+  };
+
   const clearSelection = () => setSelectedIds([]);
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
     if (!window.confirm(`Delete ${selectedIds.length} selected products?`)) return;
+    setBulkDeleting(true);
     try {
       await productsAPI.bulkDelete(selectedIds);
       toast.success(`Deleted ${selectedIds.length} products`);
@@ -217,6 +225,8 @@ function ProductManagement() {
     } catch (error) {
       console.error("Bulk delete error:", error);
       toast.error("Failed to delete selected products");
+    } finally {
+      setBulkDeleting(false);
     }
   };
 
@@ -441,8 +451,9 @@ function ProductManagement() {
       {selectedIds.length > 0 && (
         <Paper sx={{ p: 2, mb: 3, display: "flex", gap: 2, alignItems: "center" }}>
           <Typography sx={{ fontWeight: 700 }}>{selectedIds.length} selected</Typography>
-          <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleBulkDelete}>
-            Delete Selected
+          <Button size="small" onClick={selectAllMatching}>Select all matching</Button>
+          <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleBulkDelete} disabled={bulkDeleting}>
+            {bulkDeleting ? "Deleting..." : "Delete Selected"}
           </Button>
           <Button variant="outlined" startIcon={<ExportIcon />} onClick={handleExportSelected}>
             Export Selected
