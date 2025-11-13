@@ -223,6 +223,7 @@ function ProductManagement() {
   const handleExportSelected = () => {
     try {
       const dataToExport = products.filter((p) => selectedIds.includes(p.id));
+      console.debug("Exporting selected product ids:", selectedIds);
       const formatted = formatProductsForExport(dataToExport);
       const success = exportToExcel(formatted, "Products_Selected", "Selected Products");
       if (success) {
