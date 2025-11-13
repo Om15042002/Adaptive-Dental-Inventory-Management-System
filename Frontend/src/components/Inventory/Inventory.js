@@ -345,6 +345,42 @@ function Inventory() {
               </Select>
             </FormControl>
           </Grid>
+          <Grid item xs={12} md={2}>
+            <FormControl fullWidth>
+              <InputLabel sx={{ backgroundColor: "#fff", px: 1 }}>
+                Dental Specialty
+              </InputLabel>
+              <Select
+                value={selectedSpecialty}
+                label="Dental Specialty"
+                onChange={(e) => setSelectedSpecialty(e.target.value)}
+                sx={{
+                  backgroundColor: "#fff",
+                  "& .MuiSelect-select": {
+                    py: 1.5,
+                  },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: 300,
+                      "& .MuiMenuItem-root": {
+                        py: 1.5,
+                        fontSize: "0.95rem",
+                      },
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="">All Specialties</MenuItem>
+                {dentalSpecialties.map((specialty) => (
+                  <MenuItem key={specialty} value={specialty}>
+                    {specialty}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
           <Grid item xs={12} md={2.5}>
             <FormControl fullWidth>
               <InputLabel sx={{ backgroundColor: "#fff", px: 1 }}>
