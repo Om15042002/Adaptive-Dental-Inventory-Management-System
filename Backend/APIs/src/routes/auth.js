@@ -1,18 +1,73 @@
 const express = require('express');
-const { formatResponse } = require('../utils/helpers');
 const router = express.Router();
+const AuthController = require('../controllers/authController');
+const { 
+    validateUserLogin, 
+    validateUserRegistration, 
+    validatePasswordChange,
+    validateUserIdParam,
+    handleValidationErrors,
+    sanitizeBody 
+} = require('../middleware/validation');
+const { 
+    authenticateToken, 
+    requireAdmin, 
+    canAccessResource 
+} = require('../middleware/auth');
 
-// Basic auth routes placeholder
-router.get('/', (req, res) => {
-    res.json(formatResponse(null, 'Auth routes - Coming soon'));
-});
+// Apply sanitization to all routes
+router.use(sanitizeBody);
 
-router.post('/login', (req, res) => {
-    res.json(formatResponse(null, 'Login endpoint - Coming soon'));
-});
+// Public routes
+router.post('/login', 
+    validateUserLogin, 
+    handleValidationErrors, 
+    AuthController.login
+);
 
-router.post('/register', (req, res) => {
-    res.json(formatResponse(null, 'Register endpoint - Coming soon'));
-});
+router.post('/register', 
+    validateUserRegistration, 
+    handleValidationErrors, 
+    AuthController.register
+);
+
+router.post('/logout', 
+    AuthController.logout
+);
+
+// Protected routes (require authentication)
+router.get('/profile', 
+    authenticateToken, 
+    AuthController.getProfile
+);
+
+router.put('/profile', 
+    authenticateToken,
+    validateUserRegistration.slice(0, 2), // Only username and email validation
+    handleValidationErrors,
+    AuthController.updateProfile
+);
+
+router.put('/change-password',
+    authenticateToken,
+    validatePasswordChange,
+    handleValidationErrors,
+    AuthController.changePassword
+);
+
+// Admin only routes
+router.get('/users',
+    authenticateToken,
+    requireAdmin,
+    AuthController.getAllUsers
+);
+
+router.put('/users/:userId/role',
+    authenticateToken,
+    requireAdmin,
+    validateUserIdParam,
+    handleValidationErrors,
+    AuthController.updateUserRole
+);
 
 module.exports = router;
