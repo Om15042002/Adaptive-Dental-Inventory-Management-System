@@ -72,6 +72,7 @@ import {
   getDateRanges
 } from "../../utils/analyticsUtils";
 import { toast } from "react-toastify";
+import UsageTrendAnalysis from "./UsageTrendAnalysis";
 
 const CHART_COLORS = [
   '#0088FE', '#00C49F', '#FFBB28', '#FF8042', 
@@ -496,29 +497,10 @@ function Analytics() {
       </TabPanel>
 
       <TabPanel value={activeTab} index={1}>
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-            Product Usage Trends
-          </Typography>
-          <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={getUsageTrendChartData()}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
-              <Bar yAxisId="left" dataKey="usage" fill="#8884d8" name="Total Usage" />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="avgDaily"
-                stroke="#ff7300"
-                strokeWidth={2}
-                name="Avg Daily"
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </Paper>
+        <UsageTrendAnalysis 
+          stockMovements={data.stockMovements}
+          selectedProducts={data.products}
+        />
       </TabPanel>
 
       <TabPanel value={activeTab} index={2}>
