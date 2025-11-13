@@ -71,7 +71,7 @@ function Inventory() {
 
   useEffect(() => {
     fetchInventory();
-  }, [searchTerm, selectedCategory, stockFilter]);
+  }, [searchTerm, selectedCategory, selectedSpecialty, stockFilter]);
 
   const fetchInventory = async () => {
     try {
@@ -222,6 +222,7 @@ function Inventory() {
     const productName = item.product_name || item.productName || "";
     const sku = item.sku || "";
     const category = item.category_name || item.category || "";
+    const specialty = item.specialty || item.dentalSpecialty || "General";
     const currentStock = item.current_stock || item.currentStock || 0;
     const minStock = item.min_stock || item.minStockLevel || 0;
     const reorderPoint = item.reorder_point || item.reorderPoint || minStock;
@@ -230,6 +231,7 @@ function Inventory() {
       productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (sku && sku.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = !selectedCategory || category === selectedCategory;
+    const matchesSpecialty = !selectedSpecialty || specialty === selectedSpecialty;
 
     let matchesStockFilter = true;
     if (stockFilter === "low") {
@@ -240,7 +242,7 @@ function Inventory() {
       matchesStockFilter = currentStock === 0;
     }
 
-    return matchesSearch && matchesCategory && matchesStockFilter;
+    return matchesSearch && matchesCategory && matchesSpecialty && matchesStockFilter;
   });
 
   // Pagination calculations
