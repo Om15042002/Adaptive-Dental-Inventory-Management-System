@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
+  Checkbox,
   Button,
   Grid,
   Paper,
@@ -54,6 +55,7 @@ function ProductManagement() {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [viewMode, setViewMode] = useState("cards"); // "cards" or "detail"
   const [productForm, setProductForm] = useState({
     name: "",
@@ -184,6 +186,56 @@ function ProductManagement() {
     setViewMode("detail");
   };
 
+  const toggleSelectProduct = (id) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) return prev.filter((i) => i !== id);
+      return [...prev, id];
+    });
+  };
+
+  const selectAllVisible = () => {
+    const visibleIds = paginatedProducts.map((p) => p.id);
+    const allSelected = visibleIds.every((id) => selectedIds.includes(id));
+    if (allSelected) {
+      // unselect visible
+      setSelectedIds((prev) => prev.filter((id) => !visibleIds.includes(id)));
+    } else {
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...visibleIds])));
+    }
+  };
+
+  const clearSelection = () => setSelectedIds([]);
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(`Delete ${selectedIds.length} selected products?`)) return;
+    try {
+      await productsAPI.bulkDelete(selectedIds);
+      toast.success(`Deleted ${selectedIds.length} products`);
+      clearSelection();
+      fetchProducts();
+    } catch (error) {
+      console.error("Bulk delete error:", error);
+      toast.error("Failed to delete selected products");
+    }
+  };
+
+  const handleExportSelected = () => {
+    try {
+      const dataToExport = products.filter((p) => selectedIds.includes(p.id));
+      const formatted = formatProductsForExport(dataToExport);
+      const success = exportToExcel(formatted, "Products_Selected", "Selected Products");
+      if (success) {
+        toast.success(`Exported ${formatted.length} selected products`);
+      } else {
+        toast.error("Failed to export selected products");
+      }
+    } catch (error) {
+      console.error("Export selected error:", error);
+      toast.error("Failed to export selected products");
+    }
+  };
+
   const handleBackToList = () => {
     setViewMode("cards");
     setSelectedProductId(null);
@@ -295,6 +347,20 @@ function ProductManagement() {
           >
             Add Product
           </Button>
+          {/* Select all visible */}
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Checkbox
+              checked={
+                paginatedProducts.length > 0 &&
+                paginatedProducts.every((p) => selectedIds.includes(p.id))
+              }
+              onChange={selectAllVisible}
+              inputProps={{ "aria-label": "select all visible" }}
+            />
+            <Typography variant="body2" sx={{ mr: 1 }}>
+              Select visible
+            </Typography>
+          </Box>
         </Box>
       </Box>
 
@@ -370,6 +436,20 @@ function ProductManagement() {
         </Grid>
       </Paper>
 
+      {/* Bulk actions when items selected */}
+      {selectedIds.length > 0 && (
+        <Paper sx={{ p: 2, mb: 3, display: "flex", gap: 2, alignItems: "center" }}>
+          <Typography sx={{ fontWeight: 700 }}>{selectedIds.length} selected</Typography>
+          <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleBulkDelete}>
+            Delete Selected
+          </Button>
+          <Button variant="outlined" startIcon={<ExportIcon />} onClick={handleExportSelected}>
+            Export Selected
+          </Button>
+          <Button onClick={clearSelection}>Clear</Button>
+        </Paper>
+      )}
+
       {/* Products Grid */}
       <Grid container spacing={3}>
         {paginatedProducts.map((product) => {
@@ -404,6 +484,12 @@ function ProductManagement() {
                     overflow: "hidden",
                   }}
                 >
+                  {/* Selection checkbox */}
+                  <Checkbox
+                    checked={selectedIds.includes(product.id)}
+                    onChange={() => toggleSelectProduct(product.id)}
+                    sx={{ position: "absolute", top: 8, left: 8, zIndex: 10, bgcolor: "rgba(255,255,255,0.8)", borderRadius: 1 }}
+                  />
                   {productImage ? (
                     <img
                       src={productImage}
