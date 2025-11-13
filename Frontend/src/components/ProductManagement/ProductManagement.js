@@ -355,7 +355,7 @@ function ProductManagement() {
                 paginatedProducts.every((p) => selectedIds.includes(p.id))
               }
               onChange={selectAllVisible}
-              inputProps={{ "aria-label": "select all visible" }}
+              inputProps={{ "aria-label": "select all visible products" }}
             />
             <Typography variant="body2" sx={{ mr: 1 }}>
               Select visible
