@@ -123,7 +123,21 @@ class User {
 
     // Validate password
     async validatePassword(password) {
-        return await bcrypt.compare(password, this.password);
+        
+        
+        const isValid = await bcrypt.compare(password, this.password);
+        
+        console.log('   ✨ bcrypt.compare() result:', isValid);
+        
+        if (!isValid) {
+            console.log('   ⚠️  Hash mismatch detected!');
+            console.log('   💡 Possible causes:');
+            console.log('      1. Wrong password entered');
+            console.log('      2. Hash in database is incorrect');
+            console.log('      3. Hash algorithm mismatch ($2a$ vs $2b$)');
+        }
+        
+        return isValid;
     }
 
     // Update password

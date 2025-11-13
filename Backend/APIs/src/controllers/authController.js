@@ -7,29 +7,62 @@ class AuthController {
     // User login
     async login(req, res) {
         try {
+            console.log('\n========== LOGIN ATTEMPT ==========');
+            
             // Check for validation errors
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
+                console.log('❌ Validation failed:', errors.array());
                 return res.status(400).json(formatResponse(null, 'Validation failed', 400, errors.array()));
             }
 
-            const { username, password } = req.body;
+            const { username, email, password } = req.body;
+            console.log('📧 Login identifier:', email || username);
+            console.log('🔑 Password received:', password ? `${password.substring(0, 3)}***` : 'EMPTY');
+            console.log('📦 Full request body:', { username, email, password: password ? '***' : 'EMPTY' });
+
+            // Use email or username for login
+            const loginIdentifier = email || username;
 
             // Find user by username or email
-            let user = await User.findByUsername(username);
+            console.log('🔍 Searching for user by email...');
+            let user = await User.findByEmail(loginIdentifier);
             if (!user) {
-                user = await User.findByEmail(username);
+                console.log('⚠️  User not found by email, trying username...');
+                user = await User.findByUsername(loginIdentifier);
             }
 
             if (!user) {
+                console.log('❌ User NOT found in database');
                 return res.status(401).json(formatResponse(null, 'Invalid credentials', 401));
             }
+
+            console.log('✅ User found in database:');
+            console.log('   - ID:', user.id);
+            console.log('   - Username:', user.username);
+            console.log('   - Email:', user.email);
+            console.log('   - Role:', user.role);
+            console.log('   - Password hash (first 20 chars):', user.password.substring(0, 20) + '...');
+            console.log('   - Hash prefix:', user.password.substring(0, 4));
 
             // Validate password
+            console.log('🔐 Validating password...');
+            console.log('   - Plain password:', password);
+            console.log('   - Stored hash:', user.password);
+            
             const isValidPassword = await user.validatePassword(password);
+            
+            console.log('🎯 Password validation result:', isValidPassword);
+            
             if (!isValidPassword) {
+                console.log('❌ Password validation FAILED');
+                console.log('   - Expected password to match hash');
+                console.log('   - bcrypt.compare() returned false');
+                console.log('   - Hash prefix:', user.password.substring(0, 4), '(should be $2a$ for bcryptjs)');
                 return res.status(401).json(formatResponse(null, 'Invalid credentials', 401));
             }
+
+            console.log('✅ Password validation SUCCESS');
 
             // Generate JWT token
             const token = jwt.sign(
@@ -42,17 +75,21 @@ class AuthController {
                 { expiresIn: process.env.JWT_EXPIRE || '24h' }
             );
 
+            console.log('🎫 JWT token generated');
+            console.log('✅ Login successful for user:', user.username);
+            console.log('===================================\n');
+
             // Return user data and token (exclude password)
             const userData = user.toJSON();
             
             res.json(formatResponse({
                 user: userData,
                 token,
-                expiresIn: process.env.JWT_EXPIRE || '24h'
+                expiresIn: process.env.JWT_EXPIRE || '24h',
             }, 'Login successful'));
 
         } catch (error) {
-            console.error('Login error:', error);
+            console.error('💥 Login error:', error);
             handleError(error, res);
         }
     }
