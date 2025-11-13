@@ -563,6 +563,13 @@ function ProductManagement() {
                     {product.name || "Unnamed Product"}
                   </Typography>
 
+                  {/* SKU display for quick reference */}
+                  {product.sku && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      SKU: {product.sku}
+                    </Typography>
+                  )}
+
                   {/* Reorder Frequency */}
                   <Typography
                     variant="caption"
