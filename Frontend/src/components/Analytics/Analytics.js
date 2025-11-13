@@ -73,6 +73,7 @@ import {
 } from "../../utils/analyticsUtils";
 import { toast } from "react-toastify";
 import UsageTrendAnalysis from "./UsageTrendAnalysis";
+import AIInsightsEngine from "./AIInsightsEngine";
 
 const CHART_COLORS = [
   '#0088FE', '#00C49F', '#FFBB28', '#FF8042', 
@@ -440,60 +441,10 @@ function Analytics() {
 
       {/* Tab Panels */}
       <TabPanel value={activeTab} index={0}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} lg={8}>
-            <Paper sx={{ p: 3, mb: 3 }}>
-              <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-                Critical Alerts & Recommendations
-              </Typography>
-              {analytics.insights.criticalAlerts?.length > 0 ? (
-                analytics.insights.criticalAlerts.map((insight, index) => (
-                  <InsightCard key={index} insight={insight} />
-                ))
-              ) : (
-                <Alert severity="success">No critical alerts - inventory looks healthy!</Alert>
-              )}
-            </Paper>
-            
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-                Smart Recommendations
-              </Typography>
-              {analytics.insights.recommendations?.length > 0 ? (
-                analytics.insights.recommendations.map((insight, index) => (
-                  <InsightCard key={index} insight={insight} />
-                ))
-              ) : (
-                <Alert severity="info">No recommendations at this time.</Alert>
-              )}
-            </Paper>
-          </Grid>
-          
-          <Grid item xs={12} lg={4}>
-            <Paper sx={{ p: 3, height: 'min-content' }}>
-              <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-                Inventory Distribution
-              </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={getCategoryDistributionData()}
-                    dataKey="value"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {getCategoryDistributionData().map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Value']} />
-                </PieChart>
-              </ResponsiveContainer>
-            </Paper>
-          </Grid>
-        </Grid>
+        <AIInsightsEngine 
+          inventoryData={data.inventory}
+          stockMovements={data.stockMovements}
+        />
       </TabPanel>
 
       <TabPanel value={activeTab} index={1}>
