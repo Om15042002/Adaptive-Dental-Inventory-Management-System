@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Grid,
   Paper,
@@ -44,7 +44,7 @@ import {
 import { reportsAPI, inventoryAPI } from "../../services/api";
 import { toast } from "react-toastify";
 
-function StatCard({ title, value, icon, color, subtitle, trend }) {
+const StatCard = React.memo(function StatCard({ title, value, icon, color, subtitle, trend }) {
   return (
     <Card
       sx={{
@@ -140,7 +140,7 @@ function StatCard({ title, value, icon, color, subtitle, trend }) {
       </CardContent>
     </Card>
   );
-}
+});
 
 function Dashboard() {
   console.log('📊 Dashboard component rendering...');
@@ -211,6 +211,46 @@ function Dashboard() {
     ]);
     toast.success("Dashboard data refreshed");
   }, [fetchRecentTransactions]);
+
+  // Memoized calculations for performance
+  const chartData = useMemo(() => {
+    return dashboardData?.categoryBreakdown?.map((cat) => ({
+      name: cat.name,
+      value: parseInt(cat.product_count || 0),
+    })) || [];
+  }, [dashboardData?.categoryBreakdown]);
+
+  const stockStatusData = useMemo(() => {
+    const inStock = (dashboardData?.totalProducts || 0) - (dashboardData?.lowStockItems || 0);
+    const lowStock = dashboardData?.lowStockItems || 0;
+    
+    return [
+      {
+        name: "In Stock",
+        value: inStock,
+        color: "#4CAF50",
+      },
+      {
+        name: "Low Stock",
+        value: lowStock,
+        color: "#FF9800",
+      },
+    ];
+  }, [dashboardData?.totalProducts, dashboardData?.lowStockItems]);
+
+  const sortedLowStockItems = useMemo(() => {
+    return [...lowStockItems].sort((a, b) => {
+      const aStock = a.current_stock || a.currentStock || 0;
+      const bStock = b.current_stock || b.currentStock || 0;
+      const aMin = a.min_stock || a.minStock || 1;
+      const bMin = b.min_stock || b.minStock || 1;
+      
+      const aRatio = aStock / aMin;
+      const bRatio = bStock / bMin;
+      
+      return aRatio - bRatio; // Most critical first
+    });
+  }, [lowStockItems]);
 
   const fetchDashboardData = async () => {
     try {
