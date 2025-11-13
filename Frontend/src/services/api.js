@@ -93,6 +93,11 @@ export const productsAPI = {
   create: (product) => api.post("/products", product),
   update: (id, product) => api.put(`/products/${id}`, product),
   delete: (id) => api.delete(`/products/${id}`),
+  /**
+   * Bulk delete products.
+   * Note: This sends a DELETE request to /products/bulk with a JSON body { ids: [...] }.
+   * Ensure the backend accepts DELETE requests with a JSON body for this route.
+   */
   bulkDelete: (ids) => api.delete("/products/bulk", { data: { ids } }),
   search: (query) => api.get("/products/search", { params: { q: query } }),
 };
